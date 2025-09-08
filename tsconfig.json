@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "types": ["node", "passport", "passport-jwt"],
     "module": "commonjs",
     "declaration": true,
     "removeComments": true,
@@ -19,3 +20,4 @@
     "noFallthroughCasesInSwitch": false
   }
 }
+
