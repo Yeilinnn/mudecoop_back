@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["node", "passport", "passport-jwt"],
+    "types": ["node", "passport", "passport-jwt", "multer"],
     "module": "commonjs",
     "declaration": true,
     "removeComments": true,

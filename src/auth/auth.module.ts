@@ -1,4 +1,3 @@
-// src/auth/auth.module.ts
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -8,7 +7,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { User } from './entities/user.entity';
+import { Token } from './entities/token.entity';
 import { JwtStrategy } from './jwt.strategy';
+import { MailerService } from '../common/mailer/mailer.service';
+import { UsersService } from '../users/users.service';
+import { Role } from './entities/roles.entity';
 
 @Module({
   imports: [
@@ -19,14 +22,13 @@ import { JwtStrategy } from './jwt.strategy';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES') || '1h',
-        },
+        signOptions: { expiresIn: configService.get<string>('JWT_EXPIRES') || '1h' },
       }),
     }),
-    TypeOrmModule.forFeature([User]), // 👈 Role ya no es necesario en auth
+    TypeOrmModule.forFeature([User, Role, Token]),
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, MailerService, UsersService],
   controllers: [AuthController],
+  exports: [AuthService],
 })
 export class AuthModule {}

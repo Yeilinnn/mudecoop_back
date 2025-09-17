@@ -20,6 +20,15 @@ export class UsersService {
     return rest;
   }
 
+  // Helpers usados por AuthService
+  async findByEmail(email: string) {
+    return this.users.findOne({ where: { email } });
+  }
+
+  async findById(id: number) {
+    return this.users.findOne({ where: { id } });
+  }
+
   // ===== Roles =====
   async listRoles() {
     return this.roles.find({ select: ['id', 'name'] });
@@ -99,7 +108,6 @@ export class UsersService {
     const user = await this.users.findOne({ where: { id } });
     if (!user) throw new NotFoundException('Usuario no encontrado.');
     user.password = await bcrypt.hash(password, 10);
-
     const saved = await this.users.save(user);
     return this.strip(saved as any);
   }
