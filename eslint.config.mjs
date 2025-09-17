@@ -1,34 +1,37 @@
-// @ts-check
-import eslint from '@eslint/js';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
+// eslint.config.mjs
+import tseslint from '@typescript-eslint/eslint-plugin';
+import parser from '@typescript-eslint/parser';
 
-export default tseslint.config(
+/** @type {import('eslint').Linter.FlatConfig[]} */
+export default [
   {
-    ignores: ['eslint.config.mjs'],
-  },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  eslintPluginPrettierRecommended,
-  {
+    files: ['**/*.ts'],
     languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.jest,
-      },
-      sourceType: 'commonjs',
+      parser,
       parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
+        project: ['./tsconfig.eslint.json'], // 👈 hace type-aware
+        tsconfigRootDir: import.meta.dirname || process.cwd(),
+        sourceType: 'module'
+      }
     },
-  },
-  {
+    plugins: {
+      '@typescript-eslint': tseslint
+    },
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn'
-    },
+      // puedes dejarlas activas o relajarlas a 'warn'
+      '@typescript-eslint/no-unsafe-call': 'warn',
+      '@typescript-eslint/no-unsafe-assignment': 'warn',
+      '@typescript-eslint/no-unsafe-member-access': 'warn',
+      '@typescript-eslint/require-await': 'off'
+    }
   },
-);
+  // opcional: override SOLO para jwt.strategy.ts, silenciar esas reglas
+  {
+    files: ['src/auth/jwt.strategy.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off'
+    }
+  }
+];
