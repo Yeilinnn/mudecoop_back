@@ -1,7 +1,7 @@
 // app.module.ts
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
@@ -26,19 +26,33 @@ import { MenuModule } from './menu/menu.module';
       },
     }),
 
-    TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (cfg: ConfigService) => ({
-        type: 'mysql',
-        host: cfg.get('DB_HOST'),
-        port: Number(cfg.get('DB_PORT') || 3306),
-        username: cfg.get('DB_USER'),
-        password: cfg.get('DB_PASS'),
-        database: cfg.get('DB_NAME'),
-        autoLoadEntities: true,
-        synchronize: false,
-      }),
-    }),
+   TypeOrmModule.forRootAsync({
+  inject: [ConfigService],
+  useFactory: (cfg: ConfigService): TypeOrmModuleOptions => {
+    const url = cfg.get<string>('DATABASE_URL');
+
+    const common = {
+      type: 'mysql' as const,
+      autoLoadEntities: true,
+      synchronize: false,
+      timezone: 'Z' as const,
+    };
+
+    if (url) {
+      return { ...common, url };
+    }
+
+    return {
+      ...common,
+      host: cfg.get<string>('DB_HOST') ?? 'localhost',
+      port: Number(cfg.get('DB_PORT') ?? 3306),
+      username: cfg.get<string>('DB_USER') ?? '',
+      password: cfg.get<string>('DB_PASS') ?? '',
+      database: cfg.get<string>('DB_NAME') ?? '',
+    };
+  },
+}),
+
 
     AuthModule,
     UsersModule,

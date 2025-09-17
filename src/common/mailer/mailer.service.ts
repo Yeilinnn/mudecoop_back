@@ -27,7 +27,7 @@ export class MailerService {
     }
 
     this.from = this.cfg.get<string>('SMTP_FROM') || 'MUDECOOP <no-reply@mudecoop.cr>';
-    // eslint-disable-next-line no-console
+     
     console.log(`[Mailer] driver=${driver} from=${this.from}`);
   }
 
@@ -41,7 +41,7 @@ export class MailerService {
     });
 
     // Si driver=console, esto imprime el JSON del “correo” en consola.
-    // eslint-disable-next-line no-console
+     
     console.log('[Mailer] send result:', info?.messageId || info);
     return info;
   }

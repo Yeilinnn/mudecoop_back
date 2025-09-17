@@ -119,11 +119,11 @@ export class AuthService {
       try {
         await this.mailer.send(email, 'MUDECOOP • Restablecer contraseña', html);
       } catch (err) {
-        // eslint-disable-next-line no-console
+         
         console.error('[MAIL_ERROR] forgot-password →', (err as any)?.message || err);
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('[FORGOT_INTERNAL_ERROR]', (err as any)?.message || err);
       // no revelamos detalles al cliente
     }
