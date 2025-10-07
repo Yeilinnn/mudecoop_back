@@ -1,16 +1,17 @@
+// src/common/dto/toggle-visibility.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
 import { IsBoolean } from 'class-validator';
+import { Transform } from 'class-transformer';
 
-export class UpdateVisibilityDto {
+export class ToggleVisibilityDto {
   @ApiProperty({
-    description: 'Activa o inactiva la categoría',
+    description: 'Visibilidad ON/OFF',
+    example: true,
     oneOf: [
       { type: 'boolean' },
       { type: 'string', enum: ['true', 'false', '1', '0', 'yes', 'no', 'on', 'off'] },
       { type: 'number', enum: [0, 1] },
     ],
-    example: true,
   })
   @Transform(({ value }) => {
     if (typeof value === 'boolean') return value;
@@ -22,5 +23,5 @@ export class UpdateVisibilityDto {
     return false;
   })
   @IsBoolean()
-  isActive!: boolean;
+  isVisible!: boolean;
 }
