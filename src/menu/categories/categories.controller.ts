@@ -8,10 +8,12 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { FilterCategoriesDto } from './dto/filter-categories.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { UpdateVisibilityDto } from './dto/update-visibility.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
+
+// 🔁 DTO común (reemplaza a UpdateVisibilityDto local)
+import { ToggleActiveDto } from '../../common/dto/toggle-active.dto';
 
 @ApiTags('Menú / Categorías')
 @ApiBearerAuth('bearer')
@@ -47,7 +49,7 @@ export class CategoriesController {
 
   @Patch(':id/visibility')
   @ApiOperation({ summary: 'Activar/Inactivar' })
-  updateVisibility(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateVisibilityDto) {
+  updateVisibility(@Param('id', ParseIntPipe) id: number, @Body() body: ToggleActiveDto) { // 👈 unificado
     return this.svc.updateVisibility(id, body.isActive);
   }
 

@@ -7,10 +7,12 @@ import { CreateDishDto } from './dto/create-dish.dto';
 import { UpdateDishDto } from './dto/update-dish.dto';
 import { FilterDishesDto } from './dto/filter-dishes.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { UpdateVisibilityDto } from './dto/update-visibility.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
+
+// 🔁 DTO común (reemplaza a UpdateVisibilityDto local)
+import { ToggleActiveDto } from '../../common/dto/toggle-active.dto';
 
 @ApiTags('Menú / Platos')
 @ApiBearerAuth('bearer')
@@ -52,7 +54,7 @@ export class DishesController {
   @ApiBody({
     schema: { type: 'object', properties: { isActive: { type: 'boolean', example: true } }, required: ['isActive'] },
   })
-  updateVisibility(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateVisibilityDto) {
+  updateVisibility(@Param('id', ParseIntPipe) id: number, @Body() body: ToggleActiveDto) { // 👈 unificado
     return this.svc.updateVisibility(id, body.isActive);
   }
 
