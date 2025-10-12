@@ -82,11 +82,12 @@ Bd43n5U7F+LZ6rGBUtbUmN8bI2V9lga6CW5xS/cFdQDC9EoPA+T+M5VJxwbTslft
             ...common,
             url,
             ssl: isProd
-              ? {
-                  rejectUnauthorized: true,
-                  ca: singleStoreCA,
-                }
-              : undefined,
+  ? {
+      rejectUnauthorized: true,
+      ca: [singleStoreCA], // ✅ debe ser un array
+    }
+  : undefined,
+
           };
         }
 
