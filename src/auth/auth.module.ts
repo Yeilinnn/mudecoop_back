@@ -20,10 +20,14 @@ import { Role } from './entities/roles.entity';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: configService.get<string>('JWT_EXPIRES') || '1h' },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const expires = configService.get<string>('JWT_EXPIRES') ?? '1h';
+        return {
+          secret: configService.get<string>('JWT_SECRET'),
+          // 👇 forzamos compatibilidad con el nuevo tipo sin alterar lógica
+          signOptions: { expiresIn: expires as any },
+        };
+      },
     }),
     TypeOrmModule.forFeature([User, Role, Token]),
   ],

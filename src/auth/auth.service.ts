@@ -14,7 +14,6 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { MailerService } from '../common/mailer/mailer.service';
 import { UsersService } from '../users/users.service';
 
-
 const revokedRefreshTokens = new Set<string>();
 
 @Injectable()
@@ -88,14 +87,10 @@ export class AuthService {
     if (!user) return generic;
 
     try {
-      // invalidar tokens previos
       await this.tokens.delete({ userId: user.id });
-
-      // crear token nuevo
       const { raw, hash, expiresAt } = this.makeResetToken();
       await this.tokens.insert({ userId: user.id, token: hash, expiresAt, usedAt: null });
 
-      // URL
       const base = this.cfg.get<string>('FRONT_BASE_URL') || 'http://localhost:5173';
       const resetUrl = `${base.replace(/\/+$/, '')}/reset-password?token=${raw}`;
 
@@ -119,13 +114,10 @@ export class AuthService {
       try {
         await this.mailer.send(email, 'MUDECOOP • Restablecer contraseña', html);
       } catch (err) {
-         
         console.error('[MAIL_ERROR] forgot-password →', (err as any)?.message || err);
       }
     } catch (err) {
-       
       console.error('[FORGOT_INTERNAL_ERROR]', (err as any)?.message || err);
-      // no revelamos detalles al cliente
     }
 
     return generic;
@@ -157,15 +149,26 @@ export class AuthService {
   // ========== Helpers ==========
   private signAccessToken(user: User) {
     return this.jwt.sign(
-      { sub: user.id, email: user.email, role: user.role?.name, status: user.status },
-      { secret: this.cfg.get<string>('JWT_SECRET'), expiresIn: this.cfg.get<string>('JWT_EXPIRES') ?? '1h' },
+      {
+        sub: user.id,
+        email: user.email,
+        role: user.role?.name,
+        status: user.status,
+      },
+      {
+        secret: this.cfg.get<string>('JWT_SECRET'),
+        expiresIn: (this.cfg.get<string>('JWT_EXPIRES') as any) || '1h',
+      },
     );
   }
 
   private signRefreshToken(userId: number) {
     return this.jwt.sign(
       { sub: userId },
-      { secret: this.cfg.get<string>('REFRESH_SECRET'), expiresIn: this.cfg.get<string>('REFRESH_EXPIRES') ?? '7d' },
+      {
+        secret: this.cfg.get<string>('REFRESH_SECRET'),
+        expiresIn: (this.cfg.get<string>('REFRESH_EXPIRES') as any) || '7d',
+      },
     );
   }
 
@@ -176,19 +179,18 @@ export class AuthService {
   }
 
   async verifyResetToken(token: string) {
-  if (!token) return { valid: false };
+    if (!token) return { valid: false };
 
-  const hashed = crypto.createHash('sha256').update(token).digest('hex');
+    const hashed = crypto.createHash('sha256').update(token).digest('hex');
 
-  const row = await this.tokens.findOne({
-    where: {
-      token: hashed,
-      usedAt: IsNull(),
-      expiresAt: MoreThan(new Date()),
-    },
-  });
+    const row = await this.tokens.findOne({
+      where: {
+        token: hashed,
+        usedAt: IsNull(),
+        expiresAt: MoreThan(new Date()),
+      },
+    });
 
-  return { valid: !!row };
-}
-
+    return { valid: !!row };
+  }
 }
