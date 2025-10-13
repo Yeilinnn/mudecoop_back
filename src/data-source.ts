@@ -1,45 +1,34 @@
-import 'dotenv/config';
+import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import * as fs from 'fs';
-import * as https from 'https';
+import { config } from 'dotenv';
+import { join } from 'path';
 
-const isProd = process.env.NODE_ENV === 'production';
-const hasUrl = !!process.env.DATABASE_URL;
+// ✅ Cargar el .env correcto según entorno
+config({
+  path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env',
+});
 
-const caBundleUrl =
-  process.env.DATABASE_SSL_CA ||
-  'https://portal.singlestore.com/static/ca/singlestore_bundle.pem';
+// ✅ Log de depuración
+console.log(`🟢 TypeORM usando entorno: ${process.env.NODE_ENV}`);
+console.log(`🟢 Base de datos: ${process.env.DB_HOST || 'no definida'}`);
 
-const sslOptions =
-  process.env.DB_SSL === 'true'
-    ? {
-        rejectUnauthorized: false,
-        ca: fs.readFileSync('/tmp/singlestore_bundle.pem', 'utf8'),
-      }
-    : undefined;
-
-// Descarga automática del bundle al arrancar Render (si no existe)
-if (!fs.existsSync('/tmp/singlestore_bundle.pem')) {
-  https.get(caBundleUrl, (res) => {
-    const file = fs.createWriteStream('/tmp/singlestore_bundle.pem');
-    res.pipe(file);
-  });
-}
-
-export default new DataSource({
+// ✅ Fuente de datos centralizada (Railway o local)
+export const AppDataSource = new DataSource({
   type: 'mysql',
-  ...(hasUrl
-    ? { url: process.env.DATABASE_URL }
-    : {
-        host: process.env.DB_HOST,
-        port: parseInt(process.env.DB_PORT ?? '3306', 10),
-        username: process.env.DB_USER,
-        password: process.env.DB_PASS,
-        database: process.env.DB_NAME,
-        ssl: sslOptions,
-      }),
-  entities: isProd ? ['dist/**/*.entity.js'] : ['src/**/*.entity.ts'],
-  migrations: isProd ? ['dist/migrations/*.js'] : ['src/migrations/*.ts'],
+  url: process.env.DATABASE_URL ?? undefined, // usa la URL de Railway si existe
+  host: process.env.DB_HOST ?? 'localhost',
+  port: parseInt(process.env.DB_PORT ?? '3306', 10),
+  username: process.env.DB_USER ?? 'root',
+  password: process.env.DB_PASS ?? '',
+  database: process.env.DB_NAME ?? 'mudecoop',
   synchronize: false,
+  logging: false,
+  entities: [join(__dirname, '**', '*.entity.{ts,js}')],
+    migrations: [
+    process.env.NODE_ENV === 'production'
+      ? join(__dirname, 'migrations', '*.js')
+      : join(__dirname, 'migrations', '*.ts'),
+  ],
   timezone: 'Z',
+  ssl: false, // Railway no necesita SSL
 });
