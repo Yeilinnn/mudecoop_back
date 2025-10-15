@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { MenuModule } from './menu/menu.module';
 import { GalleryModule } from './gallery/gallery.module';
 import { CmsModule } from './cms/cms.module';
+import { ChatbotModule } from './chatbot/chatbot.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { CmsModule } from './cms/cms.module';
     MenuModule,
     GalleryModule,
     CmsModule,
+    ChatbotModule,
   ],
 })
 export class AppModule {}

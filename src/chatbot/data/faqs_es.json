@@ -1,0 +1,98 @@
+[
+  {
+    "id": "faq-reservas",
+    "q": "¿Cómo hago una reserva?",
+    "a": "Puedes reservar escribiéndonos por WhatsApp o llamando. Para grupos, indica fecha, hora y número de personas.",
+    "tags": ["reservas","reservar","reservacion","booking","mesa","cupo","whatsapp","telefono","ayudarme a reservar","quiero reservar","hacer una reserva"]
+  },
+  {
+    "id": "faq-horarios",
+    "q": "¿Cuáles son los horarios?",
+    "a": "Abrimos de miércoles a domingo, 11:30 a. m. a 8:00 p. m. (sujeto a mareas y clima).",
+    "tags": ["horario","horarios","apertura","cierre","a que hora","cuando abren","abren hoy","abierto","cierran"]
+  },
+  {
+    "id": "faq-ubicacion",
+    "q": "¿Dónde están ubicados?",
+    "a": "Restaurante Flotante de Manzanillo (MUDECOOP R.L.), en la costa de Manzanillo. Pregunta por el muelle principal.",
+    "tags": ["ubicacion","ubicados","direccion","como llegar","donde estan","mapa","llegar","ruta","indicaciones","manzanillo"]
+  },
+  {
+    "id": "faq-menu",
+    "q": "¿Tienen menú o carta?",
+    "a": "Sí, contamos con menú de mariscos y opciones locales. Pregunta por los especiales del día. Podemos enviar la carta por WhatsApp.",
+    "tags": ["menu","carta","platos","comidas","opciones","especiales","precios","envien el menu","ver menu"]
+  },
+  {
+    "id": "faq-mareas",
+    "q": "¿Cómo afectan las mareas?",
+    "a": "Las mareas pueden ajustar horarios de abordaje y navegación. Te confirmamos la mejor hora según marea y clima al hacer la reserva.",
+    "tags": ["marea","mareas","tide","altura de marea","baja mar","pleamar","mejor hora","afecta marea"]
+  },
+  {
+    "id": "faq-contacto",
+    "q": "¿Cuál es el contacto?",
+    "a": "Escríbenos por WhatsApp o llámanos. Al reservar te compartimos el número directo y punto de encuentro en el muelle.",
+    "tags": ["contacto","whatsapp","telefono","numero","llamar","escribir"]
+  },
+  {
+    "id": "faq-pagos",
+    "q": "¿Qué métodos de pago aceptan?",
+    "a": "Aceptamos efectivo, SINPE móvil y tarjetas seleccionadas (consulta disponibilidad el día de tu visita).",
+    "tags": ["pago","pagos","metodos de pago","tarjeta","efectivo","sinpe","sinpe movil","transferencia"]
+  },
+  {
+    "id": "faq-parqueo",
+    "q": "¿Hay parqueo cercano?",
+    "a": "Sí, hay opciones de parqueo cerca del muelle principal. Te indicamos el punto exacto al confirmar tu reserva.",
+    "tags": ["parqueo","parking","estacionamiento","donde parquear","dejar el carro","vehiculo"]
+  },
+  {
+    "id": "faq-mascotas",
+    "q": "¿Puedo llevar mascotas?",
+    "a": "Mascotas pequeñas son bienvenidas si van con su correa y comportamiento tranquilo. Avísanos en la reserva.",
+    "tags": ["mascotas","perros","gatos","pet friendly","se puede llevar mascota","animal"]
+  },
+  {
+    "id": "faq-ninos",
+    "q": "¿Es apto para niños?",
+    "a": "Sí. Recomendamos supervisión en todo momento por ser un restaurante flotante. Tenemos chalecos y áreas seguras.",
+    "tags": ["ninos","niños","familia","familiares","apto para ninos","con ninos","bebes"]
+  },
+  {
+    "id": "faq-grupos",
+    "q": "¿Atienden grupos y celebraciones?",
+    "a": "Sí, recibimos grupos y eventos privados. Indícanos fecha, horario, cantidad de personas y si requieren decoración o menú especial.",
+    "tags": ["grupos","grupo","eventos","celebraciones","cumpleanos","privado","reservar grupo","colectivo"]
+  },
+  {
+    "id": "faq-eventos",
+    "q": "¿Realizan eventos o tours especiales?",
+    "a": "Organizamos experiencias según la temporada (atardecer, música, avistamientos). Consulta la agenda actual.",
+    "tags": ["eventos","tour","tours","especial","actividad","agenda","calendario","show","musica"]
+  },
+  {
+    "id": "faq-accesibilidad",
+    "q": "¿Tienen accesibilidad?",
+    "a": "Contamos con apoyo para embarque y espacios adaptables. Avísanos si requieres ayuda adicional para planificar tu visita.",
+    "tags": ["accesibilidad","silla de ruedas","rampa","acceso","apoyo embarque","personas mayores"]
+  },
+  {
+    "id": "faq-clima",
+    "q": "¿Qué pasa si llueve o hay mal clima?",
+    "a": "Las salidas pueden reprogramarse por seguridad. Si hay alerta climática, te avisamos y reacomodamos tu reserva.",
+    "tags": ["clima","lluvia","mal tiempo","viento","tormenta","cancelar por clima","reprogramar"]
+  },
+  {
+    "id": "faq-redes",
+    "q": "¿Tienen redes sociales?",
+    "a": "Sí, seguimos compartiendo novedades y fotos en nuestras redes oficiales. Pídenos los enlaces por WhatsApp.",
+    "tags": ["redes","instagram","facebook","enlaces","fotos","social","pagina"]
+  },
+  {
+    "id": "faq-mudecoop",
+    "q": "¿Qué es MUDECOOP?",
+    "a": "MUDECOOP R.L. es una cooperativa local enfocada en desarrollo sostenible y turismo responsable en Manzanillo.",
+    "tags": ["mudecoop","cooperativa","proyecto","quienes son","sobre mudecoop","info mudecoop"]
+  }
+]
