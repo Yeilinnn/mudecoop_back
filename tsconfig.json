@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "types": ["node", "passport", "passport-jwt", "multer"],
     "module": "commonjs",
     "declaration": true,
     "removeComments": true,
@@ -16,6 +17,10 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "resolveJsonModule": true,
+"esModuleInterop": true
+
   }
 }
+
