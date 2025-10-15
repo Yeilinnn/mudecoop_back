@@ -9,16 +9,17 @@ import { UsersModule } from './users/users.module';
 import { MenuModule } from './menu/menu.module';
 import { GalleryModule } from './gallery/gallery.module';
 import { CmsModule } from './cms/cms.module';
+import { ContactModule } from './contact/contact.module';
 
 @Module({
   imports: [
-    // ✅ Carga automática de variables de entorno
+    
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: process.env.NODE_ENV === 'production' ? '.env.production' : '.env',
     }),
 
-    // ✅ Servir archivos estáticos (uploads)
+   
     ServeStaticModule.forRoot({
       serveRoot: '/uploads',
       rootPath: join(process.cwd(), 'uploads'),
@@ -31,7 +32,7 @@ import { CmsModule } from './cms/cms.module';
       },
     }),
 
-    // ✅ Conexión a Railway (funciona tanto local como en deploy)
+    
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (cfg: ConfigService): TypeOrmModuleOptions => {
@@ -53,17 +54,18 @@ import { CmsModule } from './cms/cms.module';
           autoLoadEntities: true,
           synchronize: false,
           timezone: 'Z',
-          ssl: isProd ? false : undefined, // Railway NO usa SSL
+          ssl: isProd ? false : undefined, 
         };
       },
     }),
 
-    // ✅ Tus módulos principales
+    
     AuthModule,
     UsersModule,
     MenuModule,
     GalleryModule,
     CmsModule,
+    ContactModule,
   ],
 })
 export class AppModule {}
