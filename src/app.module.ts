@@ -10,6 +10,12 @@ import { MenuModule } from './menu/menu.module';
 import { GalleryModule } from './gallery/gallery.module';
 import { CmsModule } from './cms/cms.module';
 import { ContactModule } from './contact/contact.module';
+import { ActivityModule } from './activities/activity.module';
+import { RestaurantReservation } from './restaurant-reservations/entities/restaurant-reservation.entity';
+import { RestaurantReservationsModule } from './restaurant-reservations/restaurant-reservations.module';
+import { ActivityReservationModule } from './activity-reservation/activity-reservation.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -59,13 +65,19 @@ import { ContactModule } from './contact/contact.module';
       },
     }),
 
-    
+    MailModule,
     AuthModule,
     UsersModule,
     MenuModule,
     GalleryModule,
     CmsModule,
     ContactModule,
+    ActivityModule,
+    RestaurantReservationsModule,
+    ActivityReservationModule,
+    NotificationsModule,
+    
+    
   ],
 })
 export class AppModule {}

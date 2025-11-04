@@ -16,7 +16,7 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   @ApiOperation({ summary: 'Iniciar sesión de usuario' })
-  @ApiBody({ schema: { example: { email: 'admin@mudecoop.cr', password: 'Admin#2025' } } })
+  @ApiBody({ schema: { example: { email: 'admin@mudecoop.cr', password: 'Admin#2000' } } })
   login(@Body() dto: LoginDto) {
     return this.auth.login(dto);
   }
