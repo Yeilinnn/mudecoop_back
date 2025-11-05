@@ -11,21 +11,20 @@ import { GalleryModule } from './gallery/gallery.module';
 import { CmsModule } from './cms/cms.module';
 import { ContactModule } from './contact/contact.module';
 import { ActivityModule } from './activities/activity.module';
-import { RestaurantReservation } from './restaurant-reservations/entities/restaurant-reservation.entity';
 import { RestaurantReservationsModule } from './restaurant-reservations/restaurant-reservations.module';
 import { ActivityReservationModule } from './activity-reservation/activity-reservation.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { MailModule } from './mail/mail.module';
+import { ChatbotModule } from './chatbot/chatbot.module';
 
 @Module({
   imports: [
-    
+    // ⚠️ ConfigModule DEBE estar PRIMERO y ser global
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: process.env.NODE_ENV === 'production' ? '.env.production' : '.env',
     }),
 
-   
     ServeStaticModule.forRoot({
       serveRoot: '/uploads',
       rootPath: join(process.cwd(), 'uploads'),
@@ -38,17 +37,15 @@ import { MailModule } from './mail/mail.module';
       },
     }),
 
-    
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (cfg: ConfigService): TypeOrmModuleOptions => {
         const isProd = cfg.get<string>('NODE_ENV') === 'production';
 
-        // 👇 Debug temporal para ver si carga el .env.production
-        console.log('NODE_ENV →', process.env.NODE_ENV);
-        console.log('DB_HOST →', process.env.DB_HOST);
-        console.log('DB_USER →', process.env.DB_USER);
-        console.log('DB_NAME →', process.env.DB_NAME);
+        console.log('🔍 NODE_ENV →', cfg.get<string>('NODE_ENV'));
+        console.log('🔍 DB_HOST →', cfg.get<string>('DB_HOST'));
+        console.log('🔍 DB_USER →', cfg.get<string>('DB_USER'));
+        console.log('🔍 DB_NAME →', cfg.get<string>('DB_NAME'));
 
         return {
           type: 'mysql',
@@ -60,7 +57,7 @@ import { MailModule } from './mail/mail.module';
           autoLoadEntities: true,
           synchronize: false,
           timezone: 'Z',
-          ssl: isProd ? false : undefined, 
+          ssl: isProd ? false : undefined,
         };
       },
     }),
@@ -76,8 +73,7 @@ import { MailModule } from './mail/mail.module';
     RestaurantReservationsModule,
     ActivityReservationModule,
     NotificationsModule,
-    
-    
+    ChatbotModule,
   ],
 })
 export class AppModule {}

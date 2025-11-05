@@ -5,7 +5,6 @@ import { RestaurantReservation } from './entities/restaurant-reservation.entity'
 import { CreateRestaurantReservationDto } from './dto/create-restaurant-reservation.dto';
 import { UpdateRestaurantReservationDto } from './dto/update-restaurant-reservation.dto';
 import { NotificationsService } from 'src/notifications/notifications.service';
-import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class RestaurantReservationsService {
@@ -15,14 +14,10 @@ export class RestaurantReservationsService {
 
     @Optional()
     private readonly notificationsService?: NotificationsService,
-
-    @Optional()
-    private readonly mailerService?: MailerService,
   ) {}
 
   // ======================================================
   // 🟢 Crear reserva (landing o panel admin)
-  // Firma compatible con el controller: (dto, userId?)
   // ======================================================
   async create(
     dto: CreateRestaurantReservationDto,
@@ -30,23 +25,33 @@ export class RestaurantReservationsService {
   ): Promise<RestaurantReservation> {
     const saved = await this.reservationRepo.save(dto);
 
-    // Mensaje para el admin
+    console.log('🍽️ === RESERVA GUARDADA ===');
+    console.log('🍽️ ID:', saved.id);
+    console.log('🍽️ Cliente:', saved.customerName);
+    console.log('🍽️ Email cliente:', saved.email);
+    console.log('🍽️ Fecha:', saved.date);
+    console.log('🍽️ Hora:', saved.time);
+
     const adminMsg = `Reserva creada por ${saved.customerName} para el ${saved.date} a las ${saved.time} (${saved.peopleCount} ${saved.peopleCount === 1 ? 'persona' : 'personas'}${saved.zone ? `, zona ${saved.zone}` : ''}).`;
 
-    // ✅ UNA SOLA notificación que maneja:
-    // - PUSH al admin (por el type: 'PUSH')
-    // - EMAIL al admin (por toEmail y type interno)
-    // - EMAIL al cliente (por el customer email en saved.email)
-    await this.notificationsService?.create({
+    // ✅ UNA SOLA notificación que hace TODO
+    const notificationPayload = {
       category: 'RESERVATION',
-      title: 'Nueva reserva creada',
+      title: 'Nueva reserva de restaurante', // 👈 Título más específico
       message: adminMsg,
-      type: 'PUSH', // 👈 Esto activa el PUSH y el EMAIL al admin
-      toEmail: saved.email, // 👈 Esto envía confirmación al cliente
+      type: 'PUSH' as const,
+      toEmail: saved.email,
       reservation_url: `https://admin.mudecoop.cr/reservas/${saved.id}`,
       restaurant_reservation_id: saved.id,
-    });
+    };
 
+    console.log('🔍 === ENVIANDO NOTIFICACIÓN ===');
+    console.log('🔍 Type:', notificationPayload.type);
+    console.log('🔍 toEmail:', notificationPayload.toEmail);
+
+    await this.notificationsService?.create(notificationPayload);
+
+    console.log('🍽️ === NOTIFICACIÓN ENVIADA ===\n');
     return saved;
   }
 
@@ -81,7 +86,7 @@ export class RestaurantReservationsService {
   }
 
   // ======================================================
-  // 🔵 Confirmar / Cancelar (FIRMA requerida por el controller)
+  // 🔵 Confirmar / Cancelar
   // ======================================================
   async updateStatus(
     id: number,
@@ -90,6 +95,11 @@ export class RestaurantReservationsService {
   ): Promise<RestaurantReservation> {
     const reservation = await this.findOne(id);
 
+    console.log('📝 === ACTUALIZANDO ESTADO DE RESERVA ===');
+    console.log('📝 ID:', id);
+    console.log('📝 Nuevo estado:', dto.status);
+    console.log('📝 Email cliente:', reservation.email);
+
     reservation.status = dto.status;
     if (dto.confirmedBy) {
       (reservation as any).confirmedBy = dto.confirmedBy;
@@ -97,21 +107,24 @@ export class RestaurantReservationsService {
     const updated = await this.reservationRepo.save(reservation);
 
     const isConfirmed = dto.status === 'confirmed';
-    const adminMsg = isConfirmed
-      ? `La reserva de ${reservation.customerName} fue confirmada para el ${reservation.date} a las ${reservation.time}.`
-      : `La reserva de ${reservation.customerName} fue cancelada.`;
 
-    // ✅ UNA SOLA notificación que maneja todo
-    await this.notificationsService?.create({
-      category: 'RESERVATION',
-      title: `Reserva ${isConfirmed ? 'confirmada' : 'cancelada'}`,
-      message: adminMsg,
-      type: 'PUSH', // 👈 PUSH al admin + EMAIL al admin
-      toEmail: reservation.email, // 👈 EMAIL al cliente
-      reservation_url: `https://admin.mudecoop.cr/reservas/${reservation.id}`,
-      restaurant_reservation_id: reservation.id,
-    });
+    // ✅ Solo enviar EMAIL al cliente (sin notificación PUSH al admin)
+    if (reservation.email) {
+      const notificationPayload = {
+        category: 'RESERVATION',
+        title: isConfirmed ? 'Reserva confirmada' : 'Reserva cancelada', // 👈 Título correcto
+        message: `La reserva de ${reservation.customerName} fue ${isConfirmed ? 'confirmada' : 'cancelada'}.`,
+        type: 'EMAIL' as const, // 👈 Solo EMAIL al cliente
+        toEmail: reservation.email,
+        reservation_url: `https://admin.mudecoop.cr/reservas/${reservation.id}`,
+        restaurant_reservation_id: reservation.id,
+      };
 
+      console.log('📧 Enviando email de cambio de estado al cliente:', reservation.email);
+      await this.notificationsService?.create(notificationPayload);
+    }
+
+    console.log('📝 === EMAIL DE CAMBIO ENVIADO ===\n');
     return updated;
   }
 

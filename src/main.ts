@@ -6,15 +6,19 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import * as dotenv from 'dotenv';
-dotenv.config({ path: '.env.production' });
 
+// ⚠️ Cargar .env ANTES de crear la app
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
+dotenv.config({ path: envFile });
+
+console.log(`🔧 Cargando configuración desde: ${envFile}`);
+console.log(`🔍 SMTP_ADMIN_EMAIL desde main.ts: ${process.env.SMTP_ADMIN_EMAIL}`);
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
   });
 
-  // ✅ servir imágenes estáticas
   app.useStaticAssets(join(__dirname, '..', 'uploads/coop'), {
     prefix: '/coop/',
   });
@@ -48,11 +52,11 @@ async function bootstrap() {
   const port = Number(process.env.APP_PORT ?? process.env.PORT ?? 3000);
   await app.listen(port, '0.0.0.0');
 
-  console.log(`App corriendo en http://localhost:${port}`);
-  console.log(`Swagger docs en http://localhost:${port}/docs`);
+  console.log(`🚀 App corriendo en http://localhost:${port}`);
+  console.log(`📚 Swagger docs en http://localhost:${port}/docs`);
 }
 
 bootstrap().catch((err) => {
-  console.error('Error al iniciar la app:', err);
+  console.error('❌ Error al iniciar la app:', err);
   process.exit(1);
 });
