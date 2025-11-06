@@ -22,8 +22,8 @@ export class RestaurantReservation {
   @Column({ nullable: true })
   email: string;
 
-  @Column({ type: 'date' })
-  date: string;
+ @Column({ type: 'varchar', length: 10 })
+date: string;
 
   @Column({ type: 'time' })
   time: string;

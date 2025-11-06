@@ -47,18 +47,32 @@ import { ChatbotModule } from './chatbot/chatbot.module';
         console.log('🔍 DB_USER →', cfg.get<string>('DB_USER'));
         console.log('🔍 DB_NAME →', cfg.get<string>('DB_NAME'));
 
-        return {
-          type: 'mysql',
-          host: cfg.get<string>('DB_HOST') ?? 'localhost',
-          port: Number(cfg.get<string>('DB_PORT') ?? 3306),
-          username: cfg.get<string>('DB_USER'),
-          password: cfg.get<string>('DB_PASS'),
-          database: cfg.get<string>('DB_NAME'),
-          autoLoadEntities: true,
-          synchronize: false,
-          timezone: 'Z',
-          ssl: isProd ? false : undefined,
-        };
+ const dbUrl = cfg.get<string>('DATABASE_URL');
+if (dbUrl) {
+  // 🟢 Railway usa DATABASE_URL, esto lo detecta automáticamente
+  return {
+    type: 'mysql',
+    url: dbUrl,
+    autoLoadEntities: true,
+    synchronize: false,
+    timezone: 'Z',
+  };
+}
+
+// 🟢 Fallback para entorno local (.env)
+return {
+  type: 'mysql',
+  host: cfg.get<string>('DB_HOST') ?? 'localhost',
+  port: Number(cfg.get<string>('DB_PORT') ?? 3306),
+  username: cfg.get<string>('DB_USER'),
+  password: cfg.get<string>('DB_PASS'),
+  database: cfg.get<string>('DB_NAME'),
+  autoLoadEntities: true,
+  synchronize: false,
+  timezone: 'Z',
+  ssl: isProd ? false : undefined,
+};
+
       },
     }),
 

@@ -6,11 +6,13 @@ import {
   Param,
   Patch,
   Delete,
+  Query,
   UsePipes,
   ValidationPipe,
   UseGuards,
   ParseIntPipe,
   Req,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -18,6 +20,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { RestaurantReservationsService } from './restaurant-reservations.service';
 import { CreateRestaurantReservationDto } from './dto/create-restaurant-reservation.dto';
@@ -33,6 +36,44 @@ export class RestaurantReservationsController {
   constructor(
     private readonly reservationsService: RestaurantReservationsService,
   ) {}
+
+  // ✅ PÚBLICO: Obtener horarios disponibles para una fecha
+  @Get('available-hours')
+  @ApiOperation({ summary: 'Obtener horarios disponibles para una fecha' })
+  @ApiQuery({ name: 'date', required: true, description: 'Fecha en formato YYYY-MM-DD', type: String })
+  @ApiResponse({ status: 200, description: 'Lista de horarios disponibles' })
+  async getAvailableHours(@Query('date') date: string) {
+    if (!date) {
+      throw new BadRequestException('El parámetro date es requerido');
+    }
+    return {
+      date,
+      hours: await this.reservationsService.getAvailableHours(date),
+    };
+  }
+
+  // ✅ PÚBLICO: Obtener mesas disponibles para fecha/hora/zona
+  @Get('available-tables')
+  @ApiOperation({ summary: 'Obtener mesas disponibles para fecha, hora y zona específica' })
+  @ApiQuery({ name: 'date', required: true, description: 'Fecha en formato YYYY-MM-DD', type: String })
+  @ApiQuery({ name: 'time', required: true, description: 'Hora en formato HH:mm', type: String })
+  @ApiQuery({ name: 'zone', required: false, description: 'Zona del restaurante (opcional)', type: String })
+  @ApiResponse({ status: 200, description: 'Lista de mesas disponibles' })
+  async getAvailableTables(
+    @Query('date') date: string,
+    @Query('time') time: string,
+    @Query('zone') zone?: string,
+  ) {
+    if (!date || !time) {
+      throw new BadRequestException('Los parámetros date y time son requeridos');
+    }
+    return {
+      date,
+      time,
+      zone: zone || 'all',
+      tables: await this.reservationsService.getAvailableTables(date, time, zone),
+    };
+  }
 
   // ✅ Pública, pero detecta si hay usuario autenticado
   @Post()
@@ -93,11 +134,10 @@ export class RestaurantReservationsController {
   @ApiBearerAuth('bearer')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN')
-@Delete(':id')
-@ApiOperation({ summary: 'Eliminar reserva' })
-async remove(@Param('id', ParseIntPipe) id: number) {
-  await this.reservationsService.remove(id);
-  return { success: true, message: 'Reserva eliminada correctamente' }; // ✅
-}
-
+  @Delete(':id')
+  @ApiOperation({ summary: 'Eliminar reserva' })
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    await this.reservationsService.remove(id);
+    return { success: true, message: 'Reserva eliminada correctamente' };
+  }
 }
