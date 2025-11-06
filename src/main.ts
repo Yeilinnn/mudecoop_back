@@ -15,9 +15,19 @@ console.log(`🔧 Cargando configuración desde: ${envFile}`);
 console.log(`🔍 SMTP_ADMIN_EMAIL desde main.ts: ${process.env.SMTP_ADMIN_EMAIL}`);
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    cors: true,
-  });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+// ✅ Configurar CORS según entorno
+// ✅ CORS dinámico: permite localhost en dev y tu dominio en producción
+app.enableCors({
+  origin: process.env.NODE_ENV === 'production'
+    ? process.env.FRONT_BASE_URL
+    : ['http://localhost:5173', 'http://127.0.0.1:5173'], // 👈 habilita ambos en local
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  credentials: true,
+});
+
+
 
   app.useStaticAssets(join(__dirname, '..', 'uploads/coop'), {
     prefix: '/coop/',
