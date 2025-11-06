@@ -7,36 +7,27 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import * as dotenv from 'dotenv';
 
-// ✅ Cargar .env antes de crear la app
-const envFile =
-  process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
+// ⚠️ Cargar .env ANTES de crear la app
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
 dotenv.config({ path: envFile });
 
 console.log(`🔧 Cargando configuración desde: ${envFile}`);
-console.log(
-  `🔍 SMTP_ADMIN_EMAIL desde main.ts: ${process.env.SMTP_ADMIN_EMAIL}`,
-);
+console.log(`🔍 SMTP_ADMIN_EMAIL desde main.ts: ${process.env.SMTP_ADMIN_EMAIL}`);
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // ✅ CORS CORREGIDO PARA LOCAL + PREVIEW + PRODUCCIÓN
-  app.enableCors({
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? [
-            'https://mudecoop.com',          // dominio oficial
-            'https://www.mudecoop.com',      // si usas www
-          ]
-        : [
-            'http://localhost:5173',          // vite dev
-            'http://127.0.0.1:5173',
-            'http://localhost:4173',          // vite preview
-            'http://127.0.0.1:4173',
-          ],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-  });
+// ✅ Configurar CORS según entorno
+// ✅ CORS dinámico: permite localhost en dev y tu dominio en producción
+app.enableCors({
+  origin: process.env.NODE_ENV === 'production'
+    ? process.env.FRONT_BASE_URL
+    : ['http://localhost:5173', 'http://127.0.0.1:5173'], // 👈 habilita ambos en local
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  credentials: true,
+});
+
+
 
   app.useStaticAssets(join(__dirname, '..', 'uploads/coop'), {
     prefix: '/coop/',
@@ -50,7 +41,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      transformOptions: { enableImplicitConversion: true },
+      transformOptions: { enableImplicitConversion: true }
     }),
   );
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
@@ -62,10 +53,7 @@ async function bootstrap() {
       'Módulo de Actividades Cooperativas y Turísticas (Área Administrativa)',
     )
     .setVersion('1.0.0')
-    .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
-      'bearer',
-    )
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'bearer')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
