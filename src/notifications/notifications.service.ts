@@ -24,6 +24,41 @@ export class NotificationsService {
   private recentNotifications = new Map<string, number>();
   private readonly DUPLICATE_WINDOW_MS = 3000; // 3 segundos
 
+  // ======================================================
+  // 🔧 HELPER: Limpiar formato de fecha
+  // ======================================================
+  private cleanDateFormat(date: string | Date): string {
+    if (!date) return date as string;
+    
+    const dateStr = typeof date === 'string' ? date : date.toISOString();
+    
+    // Si tiene formato ISO con hora (T00:00:00.000Z), extraer solo la fecha
+    if (dateStr.includes('T')) {
+      return dateStr.split('T')[0];
+    }
+    
+    return dateStr;
+  }
+
+  // ======================================================
+  // 🔧 HELPER: Formatear fecha en español (OPCIONAL)
+  // ======================================================
+  private formatDateInSpanish(dateStr: string): string {
+    try {
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+      
+      const months = [
+        'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+      ];
+      
+      return `${day} de ${months[date.getMonth()]} de ${year}`;
+    } catch {
+      return dateStr;
+    }
+  }
+
   private async throttleEmail() {
     const now = Date.now();
     const diff = now - this.lastEmailTs;
@@ -47,71 +82,68 @@ export class NotificationsService {
     }
   }
 
-// 🛡️ Verificar si es una notificación duplicada (robusto para RESERVATION)
-private isDuplicate(dto: CreateNotificationDto): boolean {
-  // Normalizador simple
-  const norm = (s?: string) =>
-    (s ?? '').toLowerCase().trim().replace(/\s+/g, ' ');
+  // 🛡️ Verificar si es una notificación duplicada (robusto para RESERVATION)
+  private isDuplicate(dto: CreateNotificationDto): boolean {
+    // Normalizador simple
+    const norm = (s?: string) =>
+      (s ?? '').toLowerCase().trim().replace(/\s+/g, ' ');
 
-  // 1) Intentar obtener el id de reserva de la forma más robusta posible
-  let resId = dto.restaurant_reservation_id ?? null;
+    // 1) Intentar obtener el id de reserva de la forma más robusta posible
+    let resId = dto.restaurant_reservation_id ?? null;
 
-  // Si no viene en el DTO, intentamos extraerlo de la URL /reservas/:id
-  if (!resId && dto.reservation_url) {
-    const m = dto.reservation_url.match(/\/reservas\/(\d+)(?:\/|$)/);
-    if (m) resId = Number(m[1]);
-  }
-
-  // 2) Construir una clave estable
-  // - Para RESERVATION: clave por (reserva + título normalizado)
-  // - Si NO hay resId: añadimos parte del mensaje para estabilizar
-  let key: string;
-
-  if (dto.category === 'RESERVATION') {
-    key = `RESERVATION|res:${resId ?? 'none'}|title:${norm(dto.title)}`;
-    if (!resId) {
-      key += `|msg:${norm(dto.message).slice(0, 120)}`;
-    }
-  } else {
-    // Otras categorías: título + parte del mensaje
-    key = `${norm(dto.category)}|title:${norm(dto.title)}|msg:${norm(dto.message).slice(0, 120)}`;
-  }
-
-  // 3) Ventana de bloqueo un poco mayor para absorber llamadas consecutivas
-  const now = Date.now();
-  const WINDOW_MS = 30000; // 30s
-
-  const last = this.recentNotifications.get(key);
-  if (last && now - last < WINDOW_MS) {
-    console.warn('🚫 NOTIFICACIÓN DUPLICADA DETECTADA Y BLOQUEADA:', key);
-    return true;
-  }
-
-  this.recentNotifications.set(key, now);
-
-  // Limpieza básica
-  if (this.recentNotifications.size > 200) {
-    const oldestKey = this.recentNotifications.keys().next().value;
-    this.recentNotifications.delete(oldestKey);
-  }
-
-  return false;
-}
-
-
-
-async create(dto: CreateNotificationDto) {
-  try {
-    // 🛡️ Bloquear cualquier envío redundante tipo EMAIL vacío de RESERVATION
-    if (
-      dto.category === 'RESERVATION' &&
-      dto.type === 'EMAIL' &&
-      !dto.toEmail
-    ) {
-      console.log('🚫 Ignorada notificación duplicada RESERVATION tipo EMAIL sin toEmail');
-      return { success: true, message: 'Ignored duplicate EMAIL for RESERVATION' };
+    // Si no viene en el DTO, intentamos extraerlo de la URL /reservas/:id
+    if (!resId && dto.reservation_url) {
+      const m = dto.reservation_url.match(/\/reservas\/(\d+)(?:\/|$)/);
+      if (m) resId = Number(m[1]);
     }
 
+    // 2) Construir una clave estable
+    // - Para RESERVATION: clave por (reserva + título normalizado)
+    // - Si NO hay resId: añadimos parte del mensaje para estabilizar
+    let key: string;
+
+    if (dto.category === 'RESERVATION') {
+      key = `RESERVATION|res:${resId ?? 'none'}|title:${norm(dto.title)}`;
+      if (!resId) {
+        key += `|msg:${norm(dto.message).slice(0, 120)}`;
+      }
+    } else {
+      // Otras categorías: título + parte del mensaje
+      key = `${norm(dto.category)}|title:${norm(dto.title)}|msg:${norm(dto.message).slice(0, 120)}`;
+    }
+
+    // 3) Ventana de bloqueo un poco mayor para absorber llamadas consecutivas
+    const now = Date.now();
+    const WINDOW_MS = 30000; // 30s
+
+    const last = this.recentNotifications.get(key);
+    if (last && now - last < WINDOW_MS) {
+      console.warn('🚫 NOTIFICACIÓN DUPLICADA DETECTADA Y BLOQUEADA:', key);
+      return true;
+    }
+
+    this.recentNotifications.set(key, now);
+
+    // Limpieza básica
+    if (this.recentNotifications.size > 200) {
+      const oldestKey = this.recentNotifications.keys().next().value;
+      this.recentNotifications.delete(oldestKey);
+    }
+
+    return false;
+  }
+
+  async create(dto: CreateNotificationDto) {
+    try {
+      // 🛡️ Bloquear cualquier envío redundante tipo EMAIL vacío de RESERVATION
+      if (
+        dto.category === 'RESERVATION' &&
+        dto.type === 'EMAIL' &&
+        !dto.toEmail
+      ) {
+        console.log('🚫 Ignorada notificación duplicada RESERVATION tipo EMAIL sin toEmail');
+        return { success: true, message: 'Ignored duplicate EMAIL for RESERVATION' };
+      }
 
       let saved: Notification | null = null;
 
@@ -166,33 +198,29 @@ async create(dto: CreateNotificationDto) {
         );
       }
 
-     // 3️⃣ Soporte legacy para type === 'EMAIL' con user_id (solo si NO es RESERVATION)
-else if (
-  dto.type === 'EMAIL' &&
-  !dto.toEmail &&
-  dto.user_id &&
-  dto.category !== 'RESERVATION'
-) {
-  await this.sendEmailNotificationByUserId(
-    dto.user_id,
-    dto.title,
-    dto.message,
-    dto.reservation_url,
-  );
-}
+      // 3️⃣ Soporte legacy para type === 'EMAIL' con user_id (solo si NO es RESERVATION)
+      else if (
+        dto.type === 'EMAIL' &&
+        !dto.toEmail &&
+        dto.user_id &&
+        dto.category !== 'RESERVATION'
+      ) {
+        await this.sendEmailNotificationByUserId(
+          dto.user_id,
+          dto.title,
+          dto.message,
+          dto.reservation_url,
+        );
+      }
 
-// 🟢 si es EMAIL sin toEmail y categoría RESERVATION → ignorar por completo
-else if (
-  dto.type === 'EMAIL' &&
-  !dto.toEmail &&
-  dto.category === 'RESERVATION'
-) {
-  return { success: true, message: 'Legacy email skipped for reservation' };
-}
-
-console.log('📬 === PROCESO DE NOTIFICACIÓN COMPLETADO ===\n');
-return saved || { success: true, message: 'Email sent' };
-
+      // 🟢 si es EMAIL sin toEmail y categoría RESERVATION → ignorar por completo
+      else if (
+        dto.type === 'EMAIL' &&
+        !dto.toEmail &&
+        dto.category === 'RESERVATION'
+      ) {
+        return { success: true, message: 'Legacy email skipped for reservation' };
+      }
 
       console.log('📬 === PROCESO DE NOTIFICACIÓN COMPLETADO ===\n');
       return saved || { success: true, message: 'Email sent' };
@@ -331,16 +359,37 @@ return saved || { success: true, message: 'Email sent' };
   }
 
   async findAll() {
-    return this.notificationRepo.find({
+    const notifications = await this.notificationRepo.find({
       relations: ['user', 'restaurantReservation'],
       order: { createdAt: 'DESC' },
+    });
+
+    // ✅ Limpiar fechas de las reservas relacionadas
+    return notifications.map(notification => {
+      if (notification.restaurantReservation?.date) {
+        notification.restaurantReservation.date = this.cleanDateFormat(
+          notification.restaurantReservation.date
+        );
+      }
+      return notification;
     });
   }
 
   async findByCategory(category: string) {
-    return this.notificationRepo.find({
+    const notifications = await this.notificationRepo.find({
       where: { category },
+      relations: ['restaurantReservation'],
       order: { createdAt: 'DESC' },
+    });
+
+    // ✅ Limpiar fechas de las reservas relacionadas
+    return notifications.map(notification => {
+      if (notification.restaurantReservation?.date) {
+        notification.restaurantReservation.date = this.cleanDateFormat(
+          notification.restaurantReservation.date
+        );
+      }
+      return notification;
     });
   }
 

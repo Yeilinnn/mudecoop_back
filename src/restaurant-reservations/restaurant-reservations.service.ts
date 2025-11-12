@@ -22,100 +22,118 @@ export class RestaurantReservationsService {
   ) {}
 
   // ======================================================
+  // 🔧 HELPER: Limpiar formato de fecha
+  // ======================================================
+  private cleanDateFormat(date: string | Date): string {
+    if (!date) return date as string;
+    
+    const dateStr = typeof date === 'string' ? date : date.toISOString();
+    
+    // Si tiene formato ISO con hora (T00:00:00.000Z), extraer solo la fecha
+    if (dateStr.includes('T')) {
+      return dateStr.split('T')[0];
+    }
+    
+    return dateStr;
+  }
+
+  // ======================================================
   // 🟢 Crear reserva con validaciones completas
   // ======================================================
-async create(
-  dto: CreateRestaurantReservationDto,
-  _userId?: number | null,
-): Promise<RestaurantReservation> {
-  // ✅ Validar fecha futura
-  this.validateFutureDate(dto.date);
+  async create(
+    dto: CreateRestaurantReservationDto,
+    _userId?: number | null,
+  ): Promise<RestaurantReservation> {
+    // ✅ Validar fecha futura
+    this.validateFutureDate(dto.date);
 
-  // ✅ Validar horario permitido
-  this.validateBusinessHours(dto.time, dto.date);
+    // ✅ Validar horario permitido
+    this.validateBusinessHours(dto.time, dto.date);
 
-  // ✅ Validar capacidad máxima
-  if (dto.peopleCount > this.MAX_PEOPLE_PER_RESERVATION) {
-    throw new BadRequestException(
-      `La capacidad máxima por reserva es de ${this.MAX_PEOPLE_PER_RESERVATION} personas`,
-    );
+    // ✅ Validar capacidad máxima
+    if (dto.peopleCount > this.MAX_PEOPLE_PER_RESERVATION) {
+      throw new BadRequestException(
+        `La capacidad máxima por reserva es de ${this.MAX_PEOPLE_PER_RESERVATION} personas`,
+      );
+    }
+
+    // ✅ Validar disponibilidad de mesa (si se especifica)
+    if (dto.tableNumber) {
+      await this.validateTableAvailability(
+        dto.date,
+        dto.time,
+        dto.tableNumber,
+        null, // No hay ID de reserva existente al crear
+      );
+    }
+
+    // ✅ CORRECCIÓN: eliminar posible desfase de zona horaria
+    const [year, month, day] = dto.date.split('-').map(Number);
+    const localDate = new Date(year, month - 1, day);
+    const dateWithoutOffset = new Date(
+      localDate.getTime() - localDate.getTimezoneOffset() * 60000,
+    )
+      .toISOString()
+      .split('T')[0];
+
+    // ✅ Guardar la fecha corregida sin cambio de día
+    const saved = await this.reservationRepo.save({
+      ...dto,
+      date: dateWithoutOffset,
+    });
+
+    console.log('🍽️ === RESERVA GUARDADA ===');
+    console.log('🍽️ ID:', saved.id);
+    console.log('🍽️ Cliente:', saved.customerName);
+    console.log('🍽️ Email cliente:', saved.email);
+    console.log('🍽️ Fecha (sin desfase):', saved.date);
+    console.log('🍽️ Hora:', saved.time);
+    console.log('🍽️ Zona:', saved.zone || 'N/A');
+    console.log('🍽️ Mesa:', saved.tableNumber || 'N/A');
+
+    const adminMsg = `Reserva creada por ${saved.customerName} para el ${saved.date} a las ${saved.time} (${saved.peopleCount} ${saved.peopleCount === 1 ? 'persona' : 'personas'}${saved.zone ? `, zona ${saved.zone}` : ''}${saved.tableNumber ? `, mesa ${saved.tableNumber}` : ''}).`;
+
+    // ✅ Notificación única
+    const notificationPayload = {
+      category: 'RESERVATION',
+      title: 'Nueva reserva de restaurante',
+      message: adminMsg,
+      type: 'PUSH' as const,
+      toEmail: saved.email,
+      reservation_url: `https://admin.mudecoop.cr/reservas/${saved.id}`,
+      restaurant_reservation_id: saved.id,
+    };
+
+    await this.notificationsService?.create(notificationPayload);
+    console.log('🍽️ === NOTIFICACIÓN ENVIADA ===\n');
+
+    // ✅ Limpiar formato antes de devolver
+    return {
+      ...saved,
+      date: this.cleanDateFormat(saved.date),
+    };
   }
-
-  // ✅ Validar disponibilidad de mesa (si se especifica)
-  if (dto.tableNumber) {
-    await this.validateTableAvailability(
-      dto.date,
-      dto.time,
-      dto.tableNumber,
-      null, // No hay ID de reserva existente al crear
-    );
-  }
-
-  // ✅ CORRECCIÓN: eliminar posible desfase de zona horaria
-  const [year, month, day] = dto.date.split('-').map(Number);
-  const localDate = new Date(year, month - 1, day);
-  const dateWithoutOffset = new Date(
-    localDate.getTime() - localDate.getTimezoneOffset() * 60000,
-  )
-    .toISOString()
-    .split('T')[0];
-
-  // ✅ Guardar la fecha corregida sin cambio de día
-  const saved = await this.reservationRepo.save({
-    ...dto,
-    date: dateWithoutOffset,
-  });
-
-  console.log('🍽️ === RESERVA GUARDADA ===');
-  console.log('🍽️ ID:', saved.id);
-  console.log('🍽️ Cliente:', saved.customerName);
-  console.log('🍽️ Email cliente:', saved.email);
-  console.log('🍽️ Fecha (sin desfase):', saved.date);
-  console.log('🍽️ Hora:', saved.time);
-  console.log('🍽️ Zona:', saved.zone || 'N/A');
-  console.log('🍽️ Mesa:', saved.tableNumber || 'N/A');
-
-  const adminMsg = `Reserva creada por ${saved.customerName} para el ${saved.date} a las ${saved.time} (${saved.peopleCount} ${saved.peopleCount === 1 ? 'persona' : 'personas'}${saved.zone ? `, zona ${saved.zone}` : ''}${saved.tableNumber ? `, mesa ${saved.tableNumber}` : ''}).`;
-
-  // ✅ Notificación única
-  const notificationPayload = {
-    category: 'RESERVATION',
-    title: 'Nueva reserva de restaurante',
-    message: adminMsg,
-    type: 'PUSH' as const,
-    toEmail: saved.email,
-    reservation_url: `https://admin.mudecoop.cr/reservas/${saved.id}`,
-    restaurant_reservation_id: saved.id,
-  };
-
-  await this.notificationsService?.create(notificationPayload);
-  console.log('🍽️ === NOTIFICACIÓN ENVIADA ===\n');
-
-  return saved;
-}
-
 
   // ======================================================
   // 🔧 Validar que la fecha sea futura (CORREGIDO)
   // ======================================================
   private validateFutureDate(dateStr: string): void {
-  // ✅ Interpretar fecha tal cual viene (YYYY-MM-DD) sin zona horaria
-  const [year, month, day] = dateStr.split("-").map(Number);
-  const selectedDate = new Date(year, month - 1, day);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+    // ✅ Interpretar fecha tal cual viene (YYYY-MM-DD) sin zona horaria
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const selectedDate = new Date(year, month - 1, day);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  console.log("🔍 Validando fecha:", {
-    recibida: dateStr,
-    seleccionada: selectedDate.toDateString(),
-    hoy: today.toDateString(),
-  });
+    console.log("🔍 Validando fecha:", {
+      recibida: dateStr,
+      seleccionada: selectedDate.toDateString(),
+      hoy: today.toDateString(),
+    });
 
-  if (selectedDate < today) {
-    throw new BadRequestException("No se pueden hacer reservas en fechas pasadas");
+    if (selectedDate < today) {
+      throw new BadRequestException("No se pueden hacer reservas en fechas pasadas");
+    }
   }
-}
-
 
   // ======================================================
   // 🔧 Validar horario de negocio (11:00 - 18:00)
@@ -319,9 +337,15 @@ async create(
   // 🟡 Listar todas las reservas
   // ======================================================
   async findAll(): Promise<RestaurantReservation[]> {
-    return this.reservationRepo.find({
+    const results = await this.reservationRepo.find({
       order: { date: 'DESC', time: 'ASC' },
     });
+
+    // ✅ Limpiar formato de fecha al devolver
+    return results.map(r => ({
+      ...r,
+      date: this.cleanDateFormat(r.date),
+    }));
   }
 
   // ======================================================
@@ -330,7 +354,12 @@ async create(
   async findOne(id: number): Promise<RestaurantReservation> {
     const reservation = await this.reservationRepo.findOne({ where: { id } });
     if (!reservation) throw new NotFoundException('Reserva no encontrada');
-    return reservation;
+
+    // ✅ Limpiar formato de fecha al devolver
+    return {
+      ...reservation,
+      date: this.cleanDateFormat(reservation.date),
+    };
   }
 
   // ======================================================
@@ -414,7 +443,12 @@ async create(
     }
 
     console.log('📝 === EMAIL DE CAMBIO ENVIADO ===\n');
-    return updated;
+    
+    // ✅ Limpiar formato antes de devolver
+    return {
+      ...updated,
+      date: this.cleanDateFormat(updated.date),
+    };
   }
 
   // ======================================================
