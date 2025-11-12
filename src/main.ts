@@ -65,7 +65,14 @@ async function bootstrap() {
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     credentials: true,
     maxAge: 86400,
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowedHeaders: [
+  'Content-Type', 
+  'Authorization', 
+  'X-Requested-With',
+  'expires', 
+  'pragma',
+  'cache-control'
+],
   });
 
   app.useStaticAssets(join(__dirname, '..', 'uploads/coop'), {
