@@ -83,9 +83,12 @@ export class CoopActivityController {
     @Body('activityId', ParseIntPipe) activityId: number,
   ) {
     if (!file) throw new Error('No se ha subido ningún archivo.');
-    const imageUrl = `/coop/${file.filename}`;
-return this.service.update(activityId, { image_path: imageUrl });
 
+    const baseUrl =
+      process.env.BACKEND_URL || 'https://mudecoopback-production.up.railway.app';
+    const imageUrl = `${baseUrl.replace(/\/$/, '')}/coop/${file.filename}`;
+
+    return this.service.update(activityId, { image_path: imageUrl });
   }
 
   @Get()
@@ -219,9 +222,12 @@ return this.service.update(activityId, { image_path: imageUrl });
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (!file) throw new Error('No se ha subido ningún archivo.');
-    const imageUrl = `/coop/${file.filename}`;
-return this.service.updateBlock(blockId, { image_path: imageUrl });
 
+    const baseUrl =
+      process.env.BACKEND_URL || 'https://mudecoopback-production.up.railway.app';
+    const imageUrl = `${baseUrl.replace(/\/$/, '')}/coop/${file.filename}`;
+
+    return this.service.updateBlock(blockId, { image_path: imageUrl });
   }
 
   // ============================================================

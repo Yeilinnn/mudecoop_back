@@ -35,7 +35,7 @@ export class TourismActivityController {
   constructor(private readonly service: TourismActivityService) {}
 
   // ============================================================
-  // 🔓 ENDPOINTS PÚBLICOS (SIN AUTENTICACIÓN)
+  // 🔓 ENDPOINTS PÚBLICOS
   // ============================================================
 
   @Get('public')
@@ -57,7 +57,7 @@ export class TourismActivityController {
   }
 
   // ============================================================
-  // 🔐 ENDPOINTS ADMIN (CON AUTENTICACIÓN)
+  // 🔐 ENDPOINTS ADMIN
   // ============================================================
 
   @Post()
@@ -104,9 +104,12 @@ export class TourismActivityController {
     @Body('activityId', ParseIntPipe) activityId: number,
   ) {
     if (!file) throw new Error('No se ha subido ningún archivo.');
-    const imageUrl = `/tourism/${file.filename}`;
-return this.service.update(activityId, { image_path: imageUrl });
 
+    const baseUrl =
+      process.env.BACKEND_URL || 'https://mudecoopback-production.up.railway.app';
+    const imageUrl = `${baseUrl.replace(/\/$/, '')}/tourism/${file.filename}`;
+
+    return this.service.update(activityId, { image_path: imageUrl });
   }
 
   @Get()
@@ -210,8 +213,11 @@ return this.service.update(activityId, { image_path: imageUrl });
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (!file) throw new Error('No se ha subido ningún archivo.');
-    const imageUrl = `/tourism/${file.filename}`;
-return this.service.updateBlock(blockId, { image_path: imageUrl });
 
+    const baseUrl =
+      process.env.BACKEND_URL || 'https://mudecoopback-production.up.railway.app';
+    const imageUrl = `${baseUrl.replace(/\/$/, '')}/tourism/${file.filename}`;
+
+    return this.service.updateBlock(blockId, { image_path: imageUrl });
   }
 }
