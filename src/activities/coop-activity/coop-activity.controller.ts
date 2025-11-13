@@ -83,8 +83,9 @@ export class CoopActivityController {
     @Body('activityId', ParseIntPipe) activityId: number,
   ) {
     if (!file) throw new Error('No se ha subido ningún archivo.');
-    const imageUrl = `http://localhost:3000/coop/${file.filename}`;
-    return this.service.update(activityId, { image_path: imageUrl });
+    const imageUrl = `/coop/${file.filename}`;
+return this.service.update(activityId, { image_path: imageUrl });
+
   }
 
   @Get()
@@ -218,8 +219,9 @@ export class CoopActivityController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (!file) throw new Error('No se ha subido ningún archivo.');
-    const imageUrl = `http://localhost:3000/coop/${file.filename}`;
-    return this.service.updateBlock(blockId, { image_path: imageUrl });
+    const imageUrl = `/coop/${file.filename}`;
+return this.service.updateBlock(blockId, { image_path: imageUrl });
+
   }
 
   // ============================================================

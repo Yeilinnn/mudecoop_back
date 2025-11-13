@@ -104,8 +104,9 @@ export class TourismActivityController {
     @Body('activityId', ParseIntPipe) activityId: number,
   ) {
     if (!file) throw new Error('No se ha subido ningún archivo.');
-    const imageUrl = `http://localhost:3000/tourism/${file.filename}`;
-    return this.service.update(activityId, { image_path: imageUrl });
+    const imageUrl = `/tourism/${file.filename}`;
+return this.service.update(activityId, { image_path: imageUrl });
+
   }
 
   @Get()
@@ -209,7 +210,8 @@ export class TourismActivityController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (!file) throw new Error('No se ha subido ningún archivo.');
-    const imageUrl = `http://localhost:3000/tourism/${file.filename}`;
-    return this.service.updateBlock(blockId, { image_path: imageUrl });
+    const imageUrl = `/tourism/${file.filename}`;
+return this.service.updateBlock(blockId, { image_path: imageUrl });
+
   }
 }
