@@ -31,9 +31,6 @@ import { CoopActivityBlock } from './coop-activity-block.entity';
 import { ActivityReservation } from '../../activity-reservation/entities/activity-reservation.entity';
 
 @ApiTags('Actividades Cooperativas (ADMIN)')
-@ApiBearerAuth('bearer')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
-@Roles('ADMIN', 'EDITOR')
 @Controller('coop-activities')
 export class CoopActivityController {
   constructor(private readonly service: CoopActivityService) {}
@@ -43,12 +40,18 @@ export class CoopActivityController {
   // ============================================================
 
   @Post()
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Crear nueva actividad cooperativa' })
   create(@Body() dto: CreateCoopActivityDto) {
     return this.service.create(dto);
   }
 
   @Post('upload')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Subir imagen y asociarla a una actividad cooperativa' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
@@ -85,6 +88,9 @@ export class CoopActivityController {
   }
 
   @Get()
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Listar todas las actividades (ADMIN)' })
   findAll() {
     return this.service.findAll();
@@ -96,13 +102,25 @@ export class CoopActivityController {
     return this.service.findActive();
   }
 
+  @Get('public/:id')
+  @ApiOperation({ summary: 'Obtener actividad pública por ID' })
+  findOnePublic(@Param('id', ParseIntPipe) id: number) {
+    return this.service.findOne(id);
+  }
+
   @Get(':id')
-  @ApiOperation({ summary: 'Obtener actividad por ID (ADMIN o pública)' })
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
+  @ApiOperation({ summary: 'Obtener actividad por ID (ADMIN)' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.service.findOne(id);
   }
 
   @Patch(':id')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Actualizar actividad cooperativa' })
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -112,6 +130,9 @@ export class CoopActivityController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Eliminar actividad cooperativa' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.service.remove(id);
@@ -122,6 +143,9 @@ export class CoopActivityController {
   // ============================================================
 
   @Post(':id/blocks')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Agregar bloque a actividad cooperativa' })
   addBlock(
     @Param('id', ParseIntPipe) id: number,
@@ -131,12 +155,18 @@ export class CoopActivityController {
   }
 
   @Get(':id/blocks')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Listar bloques de una actividad cooperativa' })
   findBlocks(@Param('id', ParseIntPipe) id: number) {
     return this.service.findBlocks(id);
   }
 
   @Patch('blocks/:blockId')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Actualizar bloque de actividad cooperativa' })
   updateBlock(
     @Param('blockId', ParseIntPipe) blockId: number,
@@ -146,13 +176,18 @@ export class CoopActivityController {
   }
 
   @Delete('blocks/:blockId')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Eliminar bloque de actividad cooperativa' })
   removeBlock(@Param('blockId', ParseIntPipe) blockId: number) {
     return this.service.removeBlock(blockId);
   }
 
-  // ✅ NUEVO ENDPOINT: Subir imagen de bloque cooperativo
   @Post('blocks/:blockId/upload')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Subir imagen de un bloque de actividad cooperativa' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(

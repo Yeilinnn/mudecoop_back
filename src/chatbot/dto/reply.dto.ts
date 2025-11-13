@@ -1,13 +1,15 @@
-import { IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import type { LangCode } from '../types';
 
 export class BotReplyDto {
+  @ApiProperty({ example: '¿Cuál es el horario del restaurante?' })
   @IsString()
-  @MinLength(1)
-  @MaxLength(500)
-  message!: string;
+  @IsNotEmpty()
+  message: string;
 
+  @ApiPropertyOptional({ example: 'es', enum: ['es', 'en'] })
   @IsOptional()
-  @IsIn(['es', 'es-cr'])
-  lang?: LangCode = 'es';
+  @IsString()
+  lang?: LangCode;
 }

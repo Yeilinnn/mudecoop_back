@@ -155,6 +155,25 @@ export class ChatbotService implements OnModuleInit {
     return this.messageRepo.find({ order: { displayOrder: 'ASC' } });
   }
 
+  // Agregar este método a tu ChatbotService existente
+// (después de getMessages() es un buen lugar)
+
+/**
+ * 💬 Obtener SOLO mensajes iniciales/bienvenida ACTIVOS
+ * Para uso público en el landing (sin auth)
+ */
+async getInitialMessages() {
+  return this.messageRepo.find({
+    where: { 
+      isActive: true,
+      // Puedes agregar filtro por kind si quieres:
+      // kind: In(['welcome', 'default'])
+    },
+    order: { displayOrder: 'ASC' },
+    select: ['id', 'kind', 'content', 'displayOrder'], // Solo campos necesarios
+  });
+}
+
   async createMessage(dto: Partial<ChatbotMessage>) {
     const msg = this.messageRepo.create(dto);
     return this.messageRepo.save(msg);

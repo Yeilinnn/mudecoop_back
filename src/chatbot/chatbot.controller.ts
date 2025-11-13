@@ -26,7 +26,7 @@ export class ChatbotController {
   constructor(private readonly svc: ChatbotService) {}
 
   // ==============================================
-  // 🩺 Health
+  // 🩺 Health (PÚBLICO)
   // ==============================================
   @Get('health')
   health() {
@@ -34,11 +34,20 @@ export class ChatbotController {
   }
 
   // ==============================================
-  // 🧠 Responder mensajes
+  // 💬 Mensajes iniciales/bienvenida (PÚBLICO) ✨ NUEVO
+  // ==============================================
+  @Get('messages/initial')
+  async getInitialMessages() {
+    return this.svc.getInitialMessages();
+  }
+
+  // ==============================================
+  // 🧠 Responder mensajes (PÚBLICO)
   // ==============================================
   @Post('reply')
   @HttpCode(HttpStatus.OK)
   async reply(@Body() dto: BotReplyDto) {
+    // Cambiar a usar 'message' en lugar de 'query'
     return this.svc.reply(dto.message, dto.lang ?? 'es');
   }
 
@@ -46,6 +55,9 @@ export class ChatbotController {
   // ⚙️ Configuración ON/OFF
   // ==============================================
   @Get('setting')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   getSetting() {
     return this.svc.getSetting();
   }
@@ -59,7 +71,7 @@ export class ChatbotController {
   }
 
   // ==============================================
-  // 💬 CRUD de mensajes automáticos
+  // 💬 CRUD de mensajes automáticos (ADMIN)
   // ==============================================
   @Get('messages')
   @ApiBearerAuth('bearer')
@@ -105,16 +117,14 @@ export class ChatbotController {
     return { ok: true, message: 'Índice del chatbot recargado desde la BD' };
   }
 
-  // Agregar al chatbot.controller.ts después del método reload()
-
-// ==============================================
-// 🩺 Debug search (solo para desarrollo)
-// ==============================================
-@Post('debug')
-@ApiBearerAuth('bearer')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
-@Roles('ADMIN')
-async debugSearch(@Body() dto: BotReplyDto) {
-  return this.svc.debugSearch(dto.message);
-}
+  // ==============================================
+  // 🩺 Debug search (solo para desarrollo)
+  // ==============================================
+  @Post('debug')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN')
+  async debugSearch(@Body() dto: BotReplyDto) {
+    return this.svc.debugSearch(dto.message);
+  }
 }

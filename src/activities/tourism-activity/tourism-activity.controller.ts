@@ -29,25 +29,50 @@ import { CreateTourismActivityDto } from './dto/create-tourism-activity.dto';
 import { UpdateTourismActivityDto } from './dto/update-tourism-activity.dto';
 import { TourismActivityBlock } from './tourism-activity-block.entity';
 
-@ApiTags('Actividades Turísticas (ADMIN)')
-@ApiBearerAuth('bearer')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
-@Roles('ADMIN', 'EDITOR')
+@ApiTags('Actividades Turísticas')
 @Controller('tourism-activities')
 export class TourismActivityController {
   constructor(private readonly service: TourismActivityService) {}
 
   // ============================================================
-  // 🔸 ACTIVIDADES
+  // 🔓 ENDPOINTS PÚBLICOS (SIN AUTENTICACIÓN)
+  // ============================================================
+
+  @Get('public')
+  @ApiOperation({ summary: 'Listar actividades activas (públicas)' })
+  findActive() {
+    return this.service.findActive();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Obtener actividad turística por ID (público)' })
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.service.findOne(id);
+  }
+
+  @Get(':id/blocks')
+  @ApiOperation({ summary: 'Listar bloques de una actividad turística (público)' })
+  findBlocks(@Param('id', ParseIntPipe) id: number) {
+    return this.service.findBlocks(id);
+  }
+
+  // ============================================================
+  // 🔐 ENDPOINTS ADMIN (CON AUTENTICACIÓN)
   // ============================================================
 
   @Post()
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Crear nueva actividad turística' })
   create(@Body() dto: CreateTourismActivityDto) {
     return this.service.create(dto);
   }
 
   @Post('upload')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Subir imagen y asociarla a una actividad turística' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
@@ -84,24 +109,18 @@ export class TourismActivityController {
   }
 
   @Get()
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Listar todas las actividades (ADMIN)' })
   findAll() {
     return this.service.findAll();
   }
 
-  @Get('public')
-  @ApiOperation({ summary: 'Listar actividades activas (públicas)' })
-  findActive() {
-    return this.service.findActive();
-  }
-
-  @Get(':id')
-  @ApiOperation({ summary: 'Obtener actividad turística por ID' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.service.findOne(id);
-  }
-
   @Patch(':id')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Actualizar actividad turística' })
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -111,6 +130,9 @@ export class TourismActivityController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Eliminar actividad turística' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.service.remove(id);
@@ -121,6 +143,9 @@ export class TourismActivityController {
   // ============================================================
 
   @Post(':id/blocks')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Agregar bloque de contenido a actividad turística' })
   addBlock(
     @Param('id', ParseIntPipe) id: number,
@@ -129,13 +154,10 @@ export class TourismActivityController {
     return this.service.addBlock(id, data);
   }
 
-  @Get(':id/blocks')
-  @ApiOperation({ summary: 'Listar bloques de una actividad turística' })
-  findBlocks(@Param('id', ParseIntPipe) id: number) {
-    return this.service.findBlocks(id);
-  }
-
   @Patch('blocks/:blockId')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Actualizar bloque de actividad turística' })
   updateBlock(
     @Param('blockId', ParseIntPipe) blockId: number,
@@ -145,13 +167,18 @@ export class TourismActivityController {
   }
 
   @Delete('blocks/:blockId')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Eliminar bloque de actividad turística' })
   removeBlock(@Param('blockId', ParseIntPipe) blockId: number) {
     return this.service.removeBlock(blockId);
   }
 
-  // ✅ NUEVO ENDPOINT: Subir imagen de bloque turístico
   @Post('blocks/:blockId/upload')
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'EDITOR')
   @ApiOperation({ summary: 'Subir imagen de un bloque de actividad turística' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(

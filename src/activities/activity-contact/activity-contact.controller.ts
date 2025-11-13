@@ -1,3 +1,4 @@
+// ✅ src/modules/activity-contact/activity-contact.controller.ts
 import {
   Controller,
   Post,
@@ -20,7 +21,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 export class ActivityContactController {
   constructor(private readonly contactService: ActivityContactService) {}
 
-  // 🟢 Público: formulario de contacto desde la landing
+  // 🟢 PÚBLICO: formulario de contacto desde la landing (sin token)
   @Post(':activityId')
   @ApiOperation({
     summary: 'Crear un nuevo contacto asociado a una actividad (público)',
@@ -32,7 +33,7 @@ export class ActivityContactController {
     return this.contactService.create(activityId, dto);
   }
 
-  // 🔒 Solo admin/editor
+  // 🔒 PRIVADO: solo ADMIN/EDITOR
   @Get(':activityId')
   @ApiBearerAuth('bearer')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -42,6 +43,7 @@ export class ActivityContactController {
     return this.contactService.findAllByActivity(activityId);
   }
 
+  // 🔒 PRIVADO: solo ADMIN
   @Delete(':id')
   @ApiBearerAuth('bearer')
   @UseGuards(AuthGuard('jwt'), RolesGuard)

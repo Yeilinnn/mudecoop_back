@@ -45,11 +45,11 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin, callback) => {
-      // Permitir requests sin origin (Postman, curl) solo en dev
+      // Permitir requests sin origin (Postman, curl, Swagger) solo en dev
       if (!origin) {
         if (process.env.NODE_ENV === 'production' && process.env.ALLOW_LOCAL_TESTING !== 'true') {
           console.warn('🚫 Request sin origin bloqueado');
-          return callback(new Error('Origin required'), false);
+          return callback(null, false);
         }
         return callback(null, true);
       }
@@ -59,20 +59,20 @@ async function bootstrap() {
       } else {
         console.warn(`🚫 CORS bloqueado: ${origin}`);
         console.warn(`✅ Permitidos: ${allowedOrigins.join(', ')}`);
-        callback(new Error('Not allowed by CORS'), false);
+        callback(null, false); // ✅ NO lanzar Error, solo retornar false
       }
     },
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     credentials: true,
     maxAge: 86400,
     allowedHeaders: [
-  'Content-Type', 
-  'Authorization', 
-  'X-Requested-With',
-  'expires', 
-  'pragma',
-  'cache-control'
-],
+      'Content-Type', 
+      'Authorization', 
+      'X-Requested-With',
+      'expires', 
+      'pragma',
+      'cache-control'
+    ],
   });
 
   app.useStaticAssets(join(__dirname, '..', 'uploads/coop'), {
