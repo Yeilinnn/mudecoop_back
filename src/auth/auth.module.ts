@@ -9,7 +9,7 @@ import { AuthController } from './auth.controller';
 import { User } from './entities/user.entity';
 import { Token } from './entities/token.entity';
 import { JwtStrategy } from './jwt.strategy';
-import { MailerService } from '../common/mailer/mailer.service';
+import { MailerService } from '@nestjs-modules/mailer';
 import { UsersService } from '../users/users.service';
 import { Role } from './entities/roles.entity';
 
@@ -31,7 +31,7 @@ import { Role } from './entities/roles.entity';
     }),
     TypeOrmModule.forFeature([User, Role, Token]),
   ],
-  providers: [AuthService, JwtStrategy, MailerService, UsersService],
+  providers: [AuthService, JwtStrategy, UsersService],
   controllers: [AuthController],
   exports: [AuthService],
 })

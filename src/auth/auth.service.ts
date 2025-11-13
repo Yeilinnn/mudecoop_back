@@ -11,7 +11,7 @@ import { Token } from './entities/token.entity';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { MailerService } from '../common/mailer/mailer.service';
+import { MailerService } from '@nestjs-modules/mailer';
 import { UsersService } from '../users/users.service';
 
 const revokedRefreshTokens = new Set<string>();
@@ -112,7 +112,12 @@ export class AuthService {
       `;
 
       try {
-        await this.mailer.send(email, 'MUDECOOP • Restablecer contraseña', html);
+        await this.mailer.sendMail({
+  to: email,
+  subject: 'MUDECOOP • Restablecer contraseña',
+  html,
+});
+
       } catch (err) {
         console.error('[MAIL_ERROR] forgot-password →', (err as any)?.message || err);
       }
